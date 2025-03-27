@@ -15,7 +15,7 @@ def index():
     results, chart_data = None, {}
     if request.method == "POST":
         vol = float(request.form["volume"])  # L/day
-        yield_ = float(request.form["yield"])  # ug/L
+        yield_rate = float(request.form["yield_rate"])  # ug/L
         purify = float(request.form["purify"])
         lyo = float(request.form["lyo"])
         species = request.form["species"]
