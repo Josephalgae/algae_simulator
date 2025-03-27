@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>微藻外泌體製程模擬器</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h2>微藻外泌體製程模擬器</h2>
+    <form method="POST">
+        <label>選擇藻種：</label>
+        <select name="species">
+            {% for s in species_options %}
+                <option value="{{s}}">{{s}}</option>
+            {% endfor %}
+        </select><br><br>
+        <label>每日藻液處理量 (L)：</label>
+        <input type="number" name="volume" step="0.1" value="100"><br><br>
+        <label>外泌體產率 (μg/L)：</label>
+        <input type="number" name="yield" step="1" value="500"><br><br>
+        <label>純化效率 (0~1)：</label>
+        <input type="number" name="purify" step="0.01" value="0.85"><br><br>
+        <label>凍乾濃度 (mg/mL)：</label>
+        <input type="number" name="lyo" step="0.1" value="1.0"><br><br>
+        <button type="submit">開始模擬</button>
+    </form>
+
+    {% if results %}
+    <hr>
+    <h3>模擬結果</h3>
+    <ul>
+        {% for k, v in results.items() %}
+            <li>{{k}}：{{v}}</li>
+        {% endfor %}
+    </ul>
+
+    <form action="/export" method="post">
+        {% for k, v in results.items() %}
+            <input type="hidden" name="{{k}}" value="{{v}}">
+        {% endfor %}
+        <button type="submit">匯出 Excel</button>
+    </form>
+
+    <h3>視覺化圖表</h3>
+    <canvas id="myChart"></canvas>
+    <script>
+        const ctx = document.getElementById('myChart').getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: {{ chart_data.labels | safe }},
+                datasets: [{
+                    label: '模擬結果',
+                    data: {{ chart_data.values | safe }},
+                    backgroundColor: 'rgba(54, 162, 235, 0.5)'
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: { ticks: { autoSkip: false } }
+                }
+            }
+        });
+    </script>
+    {% endif %}
+</body>
+</html>
