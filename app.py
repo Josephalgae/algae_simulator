@@ -3,25 +3,68 @@ from flask import Flask, render_template, request, send_file, session, redirect,
 import pandas as pd
 import io
 
+import os
+
+
+
+def calculate_co2_removal(
+    mu: float,          # 比生長速率 (1/day)
+    X: float,           # 生物質濃度 (g/L)
+    V: float,           # 培養體積 (L)
+    C: float = 0.5,     # 碳含量比例 (默認0.5)
+    Q_co2: float = None # CO₂供應速率 (g/day)，若要計算效率必填
+) -> dict:
+    '''
+    計算微藻系統中 CO₂ 固定速率與去除效率
+    返回格式：
+    {
+        'co2_fixation_g_per_day': ...,   # CO₂ 固定量 (g/day)
+        'removal_efficiency_percent': ...  # CO₂ 去除效率 (%)
+    }
+    '''
+    co2_fixation = mu * X * V * C * (44 / 12)
+    efficiency = None
+    if Q_co2 is not None and Q_co2 != 0:
+        efficiency = (co2_fixation / Q_co2) * 100
+    return {
+        "co2_fixation_g_per_day": round(co2_fixation, 2),
+        "removal_efficiency_percent": round(efficiency, 2) if efficiency is not None else None
+    }
+
+# 範例測試
+if __name__ == "__main__":
+    params = {
+        "mu": 0.5,
+        "X": 2,
+        "V": 10,
+        "C": 0.5,
+        "Q_co2": 30
+    }
+    result = calculate_co2_removal(**params)
+    print(f"CO₂固定速率: {result['co2_fixation_g_per_day']} g/day")
+    if result["removal_efficiency_percent"] is not None:
+        print(f"去除效率: {result['removal_efficiency_percent']}%")
+
 app = Flask(__name__)
-app.secret_key = 'your_secret_key_here'  # 設定安全密鑰
+app.secret_key = 'your_secret_key_here'  # 安全密鑰（用於 session）
 
+# ========= 藻種參數 ========= #
 species_data = {
-"小球藻": {
-"growth_rate": 0.25,
-"co2_fix": 1.83,
-"n_removal": 0.45,
-"p_removal": 0.08
-},
-"螺旋藻": {
-"growth_rate": 0.35,
-"co2_fix": 1.65,
-"n_removal": 0.38,
-"p_removal": 0.05
-}
+    "小球藻": {
+        "growth_rate": 0.25,   # g/L/day
+        "co2_fix": 1.83,       # g CO2 / g 藻
+        "n_removal": 0.45,     # g N / g 藻
+        "p_removal": 0.08      # g P / g 藻
+    },
+    "螺旋藻": {
+        "growth_rate": 0.35,
+        "co2_fix": 1.65,
+        "n_removal": 0.38,
+        "p_removal": 0.05
+    }
 }
 
-
+# ========= 主邏輯運算 ========= #
 def calculate_results(form_data):
     try:
         vol = float(form_data["volume"])
@@ -36,9 +79,9 @@ def calculate_results(form_data):
         if any(val < 0 for val in [vol, yield_rate, purify, in_n, in_p, co2_conc]):
             raise ValueError("數值不能為負")
         if co2_conc > 100:
-            raise ValueError("CO2濃度不能超過100%")
+            raise ValueError("CO₂ 濃度不能超過 100%")
         if purify > 1:
-            raise ValueError("純化效率需為0~1")
+            raise ValueError("純化效率需為 0~1")
 
         p = species_data[species]
 
@@ -48,19 +91,22 @@ def calculate_results(form_data):
         tff_vol = vol * 1000 / 10
         trehalose_g = 25 * 342.3 / 1000 * (tff_vol / 1000)
         co2_fixed = algae_kg * 1000 * p["co2_fix"]
+
         n_removed = algae_kg * 1000 * p["n_removal"]
         p_removed = algae_kg * 1000 * p["p_removal"]
         n_ppm = n_removed / vol
         p_ppm = p_removed / vol
+
         n_eff = (n_ppm / in_n) * 100 if in_n > 0 else 0
         p_eff = (p_ppm / in_p) * 100 if in_p > 0 else 0
+
         co2_mol = (co2_flow_L * co2_conc / 100) / 22.4
         co2_input_g = co2_mol * 44.01
         co2_eff = min((co2_fixed / co2_input_g) * 100, 100) if co2_input_g > 0 else 0
-        lyo_vol = exo_mg_pure / 2  # 使用預設凍乾濃度 2 mg/mL
+        co2_theoretical_eff = (co2_fixed / co2_input_g * 100) if co2_input_g > 0 else 0
 
-        lyo_vol = round(lyo_vol, 1)
-                co2_theoretical_eff = (co2_fixed / co2_input_g * 100) if co2_input_g > 0 else 0
+        lyo_vol = exo_mg_pure / 2
+
         return {
             "藻種": species,
             "藻泥產量 (kg/day)": round(algae_kg, 2),
@@ -68,7 +114,7 @@ def calculate_results(form_data):
             "純化後外泌體 (mg/day)": round(exo_mg_pure, 2),
             "濃縮後體積 (mL/day)": round(tff_vol, 1),
             "保存液 Trehalose 使用量 (g/day)": round(trehalose_g, 2),
-            "凍乾分裝體積 (mL/day)": lyo_vol,
+            "凍乾分裝體積 (mL/day)": round(lyo_vol, 1),
             "CO2 捕捉量 (g/day)": round(co2_fixed, 2),
             "CO2 去除效率 (%)": round(co2_eff, 1),
             "CO2 理論最大去除效率 (%)": round(co2_theoretical_eff, 1),
@@ -82,51 +128,7 @@ def calculate_results(form_data):
     except Exception as e:
         raise RuntimeError(f"計算錯誤: {str(e)}")
 
-
-def index():
-    error = None
-    chart_data = {}
-
-    if request.method == "POST":
-        try:
-            results = calculate_results(request.form)
-            session['results'] = results
-            chart_items = {k: v for k, v in results.items() if isinstance(v, (int, float))}
-            chart_data = {
-                "labels": list(chart_items.keys()),
-                "values": list(chart_items.values())
-            }
-        except Exception as e:
-            error = str(e)
-
-    return render_template(
-        "index.html",
-        results=session.get('results'),
-        chart_data=chart_data,
-        error=error,
-        species_options=species_data.keys()
-    )
-
-
-
-@app.route("/export")
-def export_excel():
-    results = session.get('results')
-    if not results:
-        return redirect(url_for('index'))
-    df = pd.DataFrame([results])
-    out = io.BytesIO()
-    df.to_excel(out, index=False, engine='openpyxl')
-    out.seek(0)
-    return send_file(
-        out,
-        as_attachment=True,
-        download_name="模擬結果.xlsx",
-        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
-
-
-
+# ========= 首頁路由 ========= #
 @app.route("/", methods=["GET", "POST"])
 def index():
     error = None
@@ -151,8 +153,24 @@ def index():
         species_options=species_data.keys()
     )
 
+# ========= 匯出 Excel ========= #
+@app.route("/export")
+def export_excel():
+    results = session.get('results')
+    if not results:
+        return redirect(url_for('index'))
+    df = pd.DataFrame([results])
+    out = io.BytesIO()
+    df.to_excel(out, index=False, engine='openpyxl')
+    out.seek(0)
+    return send_file(
+        out,
+        as_attachment=True,
+        download_name="模擬結果.xlsx",
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
 
+# ========= 啟動 ========= #
 if __name__ == "__main__":
-    import os
-port = int(os.environ.get("PORT", 10000))
-app.run(host="0.0.0.0", port=port)
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
