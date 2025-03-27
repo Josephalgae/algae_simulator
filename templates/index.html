@@ -16,32 +16,31 @@
   <form method="POST" class="card p-4 mb-4">
     <div class="row g-3">
       <div class="col-md-3">
-        <label class="form-label">每日藻液處理量 (L) <small class="text-muted">建議值：10–1000</small></label>
+        <label class="form-label">每日藻液處理量 (L)</label>
         <input type="number" name="volume" step="any" class="form-control" required>
       </div>
       <div class="col-md-3">
-        <label class="form-label">外泌體產率 (μg/L) <small class="text-muted">建議值：100–1000</small></label>
+        <label class="form-label">外泌體產率 (μg/L)</label>
         <input type="number" name="yield_rate" step="any" class="form-control" required>
       </div>
       <div class="col-md-3">
-        <label class="form-label">純化效率 (0–1) <small class="text-muted">如：0.85</small></label>
+        <label class="form-label">純化效率 (0~1)</label>
         <input type="number" name="purify" step="any" class="form-control" required>
       </div>
-      
       <div class="col-md-3">
-        <label class="form-label">進水氮濃度 (ppm) <small class="text-muted">建議值：5–100</small></label>
+        <label class="form-label">進水氮濃度 (ppm)</label>
         <input type="number" name="in_n" step="any" class="form-control" required>
       </div>
       <div class="col-md-3">
-        <label class="form-label">進水磷濃度 (ppm) <small class="text-muted">建議值：1–20</small></label>
+        <label class="form-label">進水磷濃度 (ppm)</label>
         <input type="number" name="in_p" step="any" class="form-control" required>
       </div>
       <div class="col-md-3">
-        <label class="form-label">CO₂ 進氣濃度 (%) <small class="text-muted">建議值：1–20</small></label>
+        <label class="form-label">CO₂ 進氣濃度 (%)</label>
         <input type="number" name="co2_conc" step="any" class="form-control" required>
       </div>
       <div class="col-md-3">
-        <label class="form-label">選擇藻種</label>
+        <label class="form-label">藻種</label>
         <select name="species" class="form-select" required>
           {% for s in species_options %}
             <option value="{{s}}">{{s}}</option>
@@ -55,34 +54,30 @@
   </form>
 
   {% if results %}
-    <div class="card p-4 mb-4">
-      <h5 class="mb-3">模擬結果（單位：每日）</h5>
-      <ul class="list-group list-group-flush">
-        {% for k, v in results.items() %}
-          <li class="list-group-item d-flex justify-content-between">
-            <span>{{k}}</span><strong>{{v}}</strong>
-          </li>
-        {% endfor %}
-      </ul>
-      <a href="/export" class="btn btn-outline-primary mt-3">匯出 Excel</a>
-    </div>
-  {% endif %}
+  <div class="card p-4 mb-4">
+    <h5 class="mb-3">模擬結果（每日）</h5>
+    <ul class="list-group list-group-flush">
+      {% for k, v in results.items() %}
+      <li class="list-group-item d-flex justify-content-between">
+        <span>{{k}}</span><strong>{{v}}</strong>
+      </li>
+      {% endfor %}
+    </ul>
+    <a href="/export" class="btn btn-outline-primary mt-3">匯出 Excel</a>
+  </div>
 
-  {% if chart_data.labels %}
   <div class="card p-4">
     <h5 class="mb-3">模擬結果圖表</h5>
     <canvas id="resultChart"></canvas>
   </div>
   <script>
-    console.log("Labels:", {{ chart_data.labels | safe }});
-    console.log("Values:", {{ chart_data.values | safe }});
     const ctx = document.getElementById('resultChart').getContext('2d');
     const chart = new Chart(ctx, {
       type: 'bar',
       data: {
         labels: {{ chart_data.labels | safe }},
         datasets: [{
-          label: '產量與效率',
+          label: '模擬值',
           data: {{ chart_data.values | safe }},
           backgroundColor: 'rgba(40, 167, 69, 0.6)'
         }]
