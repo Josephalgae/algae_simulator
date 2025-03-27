@@ -123,5 +123,31 @@ def export_excel():
     )
 
 
+
+@app.route("/", methods=["GET", "POST"])
+def index():
+    error = None
+    chart_data = {}
+    if request.method == "POST":
+        try:
+            results = calculate_results(request.form)
+            session['results'] = results
+            chart_items = {k: v for k, v in results.items() if isinstance(v, (int, float))}
+            chart_data = {
+                "labels": list(chart_items.keys()),
+                "values": list(chart_items.values())
+            }
+        except Exception as e:
+            error = str(e)
+
+    return render_template(
+        "index.html",
+        results=session.get('results'),
+        chart_data=chart_data,
+        error=error,
+        species_options=species_data.keys()
+    )
+
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000, debug=True)
