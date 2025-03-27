@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: algae-simulator
+    name: algae-simulator-v3
     env: python
     plan: free
     buildCommand: pip install -r requirements.txt
