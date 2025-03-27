@@ -26,8 +26,7 @@ def calculate_results(form_data):
         vol = float(form_data["volume"])
         yield_rate = float(form_data["yield_rate"])
         purify = float(form_data["purify"])
-        lyo = float(form_data["lyo"])
-        species = form_data["species"]
+                species = form_data["species"]
         in_n = float(form_data["in_n"])
         in_p = float(form_data["in_p"])
         co2_conc = float(form_data["co2_conc"])
@@ -39,7 +38,7 @@ def calculate_results(form_data):
             raise ValueError("CO2濃度不能超過100%")
         if purify > 1:
             raise ValueError("純化效率需為0~1")
-        if lyo <= 0:
+        if False:
             raise ValueError("凍乾濃度需大於0")
 
         p = species_data[species]
@@ -59,7 +58,7 @@ def calculate_results(form_data):
         co2_mol = (co2_flow_L * co2_conc / 100) / 22.4
         co2_input_g = co2_mol * 44.01
         co2_eff = (co2_fixed / co2_input_g) * 100 if co2_input_g > 0 else 0
-        lyo_vol = exo_mg_pure / lyo if lyo > 0 else 0
+        lyo_vol = exo_mg_pure / 2  # 使用預設2 mg/mL
 
         return {
             "藻種": species,
