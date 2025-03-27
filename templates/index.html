@@ -16,27 +16,27 @@
   <form method="POST" class="card p-4 mb-4">
     <div class="row g-3">
       <div class="col-md-3">
-        <label class="form-label">每日藻液處理量 (L)</label>
+        <label class="form-label">每日藻液處理量 (L) <small class="text-muted">建議值：10–10000</small></label>
         <input type="number" name="volume" step="any" class="form-control" required>
       </div>
       <div class="col-md-3">
-        <label class="form-label">外泌體產率 (μg/L)</label>
+        <label class="form-label">外泌體產率 (μg/L) <small class="text-muted">建議值：100–1000</small></label>
         <input type="number" name="yield_rate" step="any" class="form-control" required>
       </div>
       <div class="col-md-3">
-        <label class="form-label">純化效率 (0~1)</label>
+        <label class="form-label">純化效率 (0–1) <small class="text-muted">如 0.85</small></label>
         <input type="number" name="purify" step="any" class="form-control" required>
       </div>
       <div class="col-md-3">
-        <label class="form-label">進水氮濃度 (ppm)</label>
+        <label class="form-label">進水氮濃度 (ppm) <small class="text-muted">建議值：5–100</small></label>
         <input type="number" name="in_n" step="any" class="form-control" required>
       </div>
       <div class="col-md-3">
-        <label class="form-label">進水磷濃度 (ppm)</label>
+        <label class="form-label">進水磷濃度 (ppm) <small class="text-muted">建議值：1–20</small></label>
         <input type="number" name="in_p" step="any" class="form-control" required>
       </div>
       <div class="col-md-3">
-        <label class="form-label">CO₂ 進氣濃度 (%)</label>
+        <label class="form-label">CO₂ 進氣濃度 (%) <small class="text-muted">建議值：1–20</small></label>
         <input type="number" name="co2_conc" step="any" class="form-control" required>
       </div>
       <div class="col-md-3">
@@ -65,7 +65,9 @@
     </ul>
     <a href="/export" class="btn btn-outline-primary mt-3">匯出 Excel</a>
   </div>
+  {% endif %}
 
+  {% if chart_data.labels %}
   <div class="card p-4">
     <h5 class="mb-3">模擬結果圖表</h5>
     <canvas id="resultChart"></canvas>
