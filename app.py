@@ -26,7 +26,7 @@ def calculate_results(form_data):
         vol = float(form_data["volume"])
         yield_rate = float(form_data["yield_rate"])
         purify = float(form_data["purify"])
-                species = form_data["species"]
+        species = form_data["species"]
         in_n = float(form_data["in_n"])
         in_p = float(form_data["in_p"])
         co2_conc = float(form_data["co2_conc"])
