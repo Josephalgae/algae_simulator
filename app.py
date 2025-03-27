@@ -26,7 +26,7 @@ def calculate_results(form_data):
         vol = float(form_data["volume"])
         yield_rate = float(form_data["yield_rate"])
         purify = float(form_data["purify"])
-        species = form_data["species"]
+                species = form_data["species"]
         in_n = float(form_data["in_n"])
         in_p = float(form_data["in_p"])
         co2_conc = float(form_data["co2_conc"])
@@ -36,8 +36,7 @@ def calculate_results(form_data):
             raise ValueError("數值不能為負")
         if co2_conc > 100:
             raise ValueError("CO2濃度不能超過100%")
-        if purify > 1:
-            raise ValueError("純化效率需為0~1")
+                    raise ValueError("純化效率需為0~1")
         if False:
             raise ValueError("凍乾濃度需大於0")
 
@@ -60,6 +59,7 @@ def calculate_results(form_data):
         co2_eff = (co2_fixed / co2_input_g) * 100 if co2_input_g > 0 else 0
         lyo_vol = exo_mg_pure / 2  # 使用預設2 mg/mL
 
+        lyo_vol = round(lyo_vol, 1)
         return {
             "藻種": species,
             "藻泥產量 (kg/day)": round(algae_kg, 2),
