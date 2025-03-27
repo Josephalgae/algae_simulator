@@ -79,29 +79,31 @@ def calculate_results(form_data):
     except Exception as e:
         raise RuntimeError(f"計算錯誤: {str(e)}")
 
+
 def index():
-error = None
-chart_data = {}
+    error = None
+    chart_data = {}
 
-if request.method == "POST":
-try:
-results = calculate_results(request.form)
-session['results'] = results
-chart_items = {k: v for k, v in results.items() if isinstance(v, (int, float))}
-chart_data = {
-"labels": list(chart_items.keys()),
-"values": list(chart_items.values())
-}
-except Exception as e:
-error = str(e)
+    if request.method == "POST":
+        try:
+            results = calculate_results(request.form)
+            session['results'] = results
+            chart_items = {k: v for k, v in results.items() if isinstance(v, (int, float))}
+            chart_data = {
+                "labels": list(chart_items.keys()),
+                "values": list(chart_items.values())
+            }
+        except Exception as e:
+            error = str(e)
 
-return render_template(
-"index.html",
-results=session.get('results'),
-chart_data=chart_data,
-error=error,
-species_options=species_data.keys()
-)
+    return render_template(
+        "index.html",
+        results=session.get('results'),
+        chart_data=chart_data,
+        error=error,
+        species_options=species_data.keys()
+    )
+
 
 @app.route("/export")
 def export_excel():
