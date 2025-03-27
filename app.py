@@ -103,8 +103,6 @@ def calculate_results(form_data):
         co2_mol = (co2_flow_L * co2_conc / 100) / 22.4
         co2_input_g = co2_mol * 44.01
         co2_eff = min((co2_fixed / co2_input_g) * 100, 100) if co2_input_g > 0 else 0
-        co2_theoretical_eff = (co2_fixed / co2_input_g * 100) if co2_input_g > 0 else 0
-
         lyo_vol = exo_mg_pure / 2
 
         return {
@@ -116,9 +114,7 @@ def calculate_results(form_data):
             "保存液 Trehalose 使用量 (g/day)": round(trehalose_g, 2),
             "凍乾分裝體積 (mL/day)": round(lyo_vol, 1),
             "CO2 捕捉量 (g/day)": round(co2_fixed, 2),
-            "CO2 去除效率 (%)": round(co2_eff, 1),
-            "CO2 理論最大去除效率 (%)": round(co2_theoretical_eff, 1),
-            "單位藻固定 CO2 (g/g)": p["co2_fix"],
+            "CO2 去除效率 (%)": round(co2_eff, 1),            "單位藻固定 CO2 (g/g)": p["co2_fix"],
             "氮去除量 (ppm/day)": round(n_ppm, 2),
             "磷去除量 (ppm/day)": round(p_ppm, 2),
             "氮去除效率 (%)": round(n_eff, 1),
