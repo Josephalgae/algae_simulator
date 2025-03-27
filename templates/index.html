@@ -69,34 +69,38 @@
       </ul>
       <a href="/export" class="btn btn-outline-primary mt-3">匯出 Excel</a>
     </div>
+  {% endif %}
 
-    <div class="card p-4">
-      <h5 class="mb-3">模擬結果圖表</h5>
-      <canvas id="resultChart"></canvas>
-    </div>
-    <script>
-      const ctx = document.getElementById('resultChart').getContext('2d');
-      const chart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: {{ chart_data.labels | safe }},
-          datasets: [{
-            label: '產量與效率',
-            data: {{ chart_data.values | safe }},
-            backgroundColor: 'rgba(40, 167, 69, 0.6)'
-          }]
-        },
-        options: {
-          responsive: true,
-          scales: {
-            y: {
-              beginAtZero: true,
-              title: { display: true, text: '值' }
-            }
+  {% if chart_data.labels %}
+  <div class="card p-4">
+    <h5 class="mb-3">模擬結果圖表</h5>
+    <canvas id="resultChart"></canvas>
+  </div>
+  <script>
+    console.log("Labels:", {{ chart_data.labels | safe }});
+    console.log("Values:", {{ chart_data.values | safe }});
+    const ctx = document.getElementById('resultChart').getContext('2d');
+    const chart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: {{ chart_data.labels | safe }},
+        datasets: [{
+          label: '產量與效率',
+          data: {{ chart_data.values | safe }},
+          backgroundColor: 'rgba(40, 167, 69, 0.6)'
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: { display: true, text: '值' }
           }
         }
-      });
-    </script>
+      }
+    });
+  </script>
   {% endif %}
 </div>
 </body>
