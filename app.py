@@ -105,16 +105,23 @@ def index():
     )
 
 
+
 @app.route("/export")
 def export_excel():
-results = session.get('results')
-if not results:
-return redirect(url_for('index'))
-df = pd.DataFrame([results])
-out = io.BytesIO()
-df.to_excel(out, index=False, engine='openpyxl')
-out.seek(0)
-return send_file(out, as_attachment=True, download_name="模擬結果.xlsx", mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    results = session.get('results')
+    if not results:
+        return redirect(url_for('index'))
+    df = pd.DataFrame([results])
+    out = io.BytesIO()
+    df.to_excel(out, index=False, engine='openpyxl')
+    out.seek(0)
+    return send_file(
+        out,
+        as_attachment=True,
+        download_name="模擬結果.xlsx",
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+
 
 if __name__ == "__main__":
 app.run(host="0.0.0.0", port=10000, debug=True)
