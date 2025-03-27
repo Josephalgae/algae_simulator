@@ -36,7 +36,7 @@ def calculate_results(form_data):
             raise ValueError("數值不能為負")
         if co2_conc > 100:
             raise ValueError("CO2濃度不能超過100%")
-                    raise ValueError("純化效率需為0~1")
+            raise ValueError("純化效率需為0~1")
         if False:
             raise ValueError("凍乾濃度需大於0")
 
